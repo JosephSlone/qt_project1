@@ -15,6 +15,9 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+    void setName(const QString &name);
+    QString name() const;
+
 private:
     Ui::MainWindow *ui;
 };
