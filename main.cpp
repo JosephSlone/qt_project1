@@ -4,18 +4,20 @@
 #include <QtSql>
 #include <QTableView>
 #include <QSqlTableModel>
+#include <QSqlDatabase>
 
 #include <QDebug>
 
+QSqlDatabase db = QSqlDatabase::addDatabase("QODBC");
 
 void initializeModel(QSqlTableModel *model)
 {
-
     model->setTable("Facilities");
     model->setEditStrategy(QSqlTableModel::OnManualSubmit);
     model->select();
 
-
+    qDebug() << model->tableName();
+    qDebug() << model->database().lastError().databaseText();
 }
 
 QTableView *createView(QSqlTableModel *model, const QString &title="")
@@ -27,17 +29,25 @@ QTableView *createView(QSqlTableModel *model, const QString &title="")
 
 }
 
-int main(int argc, char *argv[])
+boolean openConnection()
 {
-    QApplication app(argc, argv);
-
-    QSqlDatabase db = QSqlDatabase::addDatabase("QODBC");
     db.setDatabaseName("localData");
     db.open();
 
+    if (db.isValid())
+        return true;
+    else
+        return false;
+}
 
-
+int main(int argc, char *argv[])
+{
+    QApplication app(argc, argv);
     QSqlTableModel model;
+
+
+    if (!openConnection())
+        return 1;
 
     initializeModel(&model);
 
