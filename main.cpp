@@ -1,65 +1,50 @@
 #include "mainwindow.h"
 #include <QApplication>
+#include <QtGui>
+#include <QtSql>
+#include <QTableView>
+#include <QSqlTableModel>
 
-#include <QSqlDatabase>
-#include <QSqlQueryModel>
 #include <QDebug>
-#include <QSqlRecord>
-#include <QSqlError>
 
+
+void initializeModel(QSqlTableModel *model)
+{
+
+    model->setTable("Facilities");
+    model->setEditStrategy(QSqlTableModel::OnManualSubmit);
+    model->select();
+
+
+}
+
+QTableView *createView(QSqlTableModel *model, const QString &title="")
+{
+    QTableView *view = new QTableView;
+    view->setModel(model);
+    view->setWindowTitle(title);
+    return view;
+
+}
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
-    MainWindow w;
-    QString name;
-    QSqlError errorId;
-
-
-    // qDebug can accept piped strings
-
-    qDebug() << "Starting Program";
-
-    // Connect to an ODBC database named "localData"
-    // I created this in (localdb)/LocalInstance and created a
-    // 32bit ODBC connection for it.
+    QApplication app(argc, argv);
 
     QSqlDatabase db = QSqlDatabase::addDatabase("QODBC");
     db.setDatabaseName("localData");
-    db.open();  // Yes, we have to open it.
-
-    QSqlQueryModel myQuery;   // A simple query model.
-
-    // Run the query
-    // This one should fail, we don't need dbo_
-
-    myQuery.setQuery("SELECT * FROM dbo_Facilities");
+    db.open();
 
 
-    // Get an error object and check for an error.
-    // You should be able to test for an error with errorId.isValid()
-    // and then do something about it.
 
-    errorId = myQuery.lastError();
-    qDebug() << errorId.databaseText();
+    QSqlTableModel model;
 
-    // This one should work.
+    initializeModel(&model);
 
-    myQuery.setQuery("SELECT * FROM Facilities");
-    errorId = myQuery.lastError();
-    qDebug() << errorId.databaseText();
+    QTableView *view1 = createView(&model, QObject::tr("Table Model (View 1)"));
 
+    view1->show();
 
-    // Walk through the results and do some simple processing.
+    return app.exec();
 
-    for (int i = 0; i < myQuery.rowCount(); ++i) {
-        name = myQuery.record(i).value("Name").toString();
-        qDebug() << name;
-        w.setName(name);
-    }
-
-
-    w.show();  // Show the window??
-
-    return a.exec();
 }
